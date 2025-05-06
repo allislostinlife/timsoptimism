@@ -34,8 +34,15 @@
   <div id="timer">Loading...</div>
 
   <script>
-    const startDate = new Date();
-    const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    // Set end date 30 days from initial page load
+    const storedEndDate = localStorage.getItem('timsOptimismEndDate');
+    let endDate;
+    if (storedEndDate) {
+      endDate = new Date(storedEndDate);
+    } else {
+      endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      localStorage.setItem('timsOptimismEndDate', endDate.toISOString());
+    }
 
     function updateTimer() {
       const now = new Date();
