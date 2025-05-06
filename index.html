@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tim's Optimism</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f8ff;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+    }
+    #timer {
+      font-size: 2em;
+      background: #fff;
+      padding: 1em 2em;
+      border: 2px solid #007BFF;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tim's Optimism</h1>
+  <div id="timer">Loading...</div>
+
+  <script>
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    function updateTimer() {
+      const now = new Date();
+      const timeLeft = endDate - now;
+
+      if (timeLeft <= 0) {
+        document.getElementById("timer").textContent = "Time's up! Stay optimistic!";
+        clearInterval(timerInterval);
+        return;
+      }
+
+      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+
+      document.getElementById("timer").textContent =
+        `${days} days, ${hours} hours, ${minutes} minutes left`;
+    }
+
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 60000);
+  </script>
+</body>
+</html>
