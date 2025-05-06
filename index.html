@@ -34,13 +34,12 @@
   <div id="timer">Loading...</div>
 
   <script>
-    // Set a 30-day countdown from the first page load
-    const now = new Date();
-    const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     function updateTimer() {
-      const current = new Date();
-      const timeLeft = endDate - current;
+      const now = new Date();
+      const timeLeft = endDate - now;
 
       if (timeLeft <= 0) {
         document.getElementById("timer").textContent = "0 days, 0 hours, 0 minutes, 0 seconds";
