@@ -1,65 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tim's Optimism</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f8ff;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      font-size: 3em;
-      margin-bottom: 0.5em;
-    }
-    #timer {
-      font-size: 2em;
-      background: #fff;
-      padding: 1em 2em;
-      border: 2px solid #007BFF;
-      border-radius: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tim's Optimism Meter</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #d9534f;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        .countdown {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        .time-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .time-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #d9534f;
+            margin-bottom: 10px;
+        }
+        .time-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: #777;
+        }
+        .message {
+            margin-top: 40px;
+            font-style: italic;
+            color: #666;
+        }
+        .doomsday-reached {
+            display: none;
+            font-size: 2rem;
+            color: #d9534f;
+            margin-top: 40px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <h1>Tim's Optimism</h1>
-  <div id="timer">Loading...</div>
+    <div class="container">
+        <h1>Tim's Optimism Meter</h1>
+        <div class="countdown">
+            <div class="time-block">
+                <div id="days" class="time-value">30</div>
+                <div class="time-label">Days</div>
+            </div>
+            <div class="time-block">
+                <div id="hours" class="time-value">0</div>
+                <div class="time-label">Hours</div>
+            </div>
+            <div class="time-block">
+                <div id="minutes" class="time-value">0</div>
+                <div class="time-label">Minutes</div>
+            </div>
+            <div class="time-block">
+                <div id="seconds" class="time-value">0</div>
+                <div class="time-label">Seconds</div>
+            </div>
+        </div>
+        <div class="message">Time remaining until doomsday...</div>
+        <div id="doomsday-message" class="doomsday-reached">Doomsday Has Arrived!</div>
+    </div>
 
-  <script>
-    // Establish a fixed start time (e.g., when the countdown began)
-    const startDate = new Date("2025-05-06T00:00:00Z"); // Change this to your intended start date/time
-    const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    <script>
+        // Set the countdown time to 30 days from now
+        const now = new Date();
+        const doomsday = new Date(now);
+        doomsday.setDate(now.getDate() + 30);
 
-    function updateTimer() {
-      const now = new Date();
-      const timeLeft = endDate - now;
-
-      if (timeLeft <= 0) {
-        document.getElementById("timer").textContent = "0 days, 0 hours, 0 minutes, 0 seconds";
-        clearInterval(timerInterval);
-        return;
-      }
-
-      const totalSeconds = Math.floor(timeLeft / 1000);
-      const days = Math.floor(totalSeconds / (60 * 60 * 24));
-      const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
-      const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
-      const seconds = totalSeconds % 60;
-
-      document.getElementById("timer").textContent =
-        `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
-    }
-
-    updateTimer();
-    const timerInterval = setInterval(updateTimer, 1000);
-  </script>
+        // Update the countdown every second
+        const countdown = setInterval(function() {
+            // Get current date and time
+            const currentTime = new Date();
+            
+            // Calculate the difference in milliseconds
+            const diff = doomsday - currentTime;
+            
+            // Check if doomsday has been reached
+            if (diff <= 0) {
+                clearInterval(countdown);
+                document.getElementById("days").innerHTML = "0";
+                document.getElementById("hours").innerHTML = "0";
+                document.getElementById("minutes").innerHTML = "0";
+                document.getElementById("seconds").innerHTML = "0";
+                document.getElementById("doomsday-message").style.display = "block";
+                document.querySelector(".message").style.display = "none";
+                return;
+            }
+            
+            // Calculate days, hours, minutes, and seconds
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Display the result
+            document.getElementById("days").innerHTML = days;
+            document.getElementById("hours").innerHTML = hours;
+            document.getElementById("minutes").innerHTML = minutes;
+            document.getElementById("seconds").innerHTML = seconds;
+        }, 1000);
+    </script>
 </body>
 </html>
