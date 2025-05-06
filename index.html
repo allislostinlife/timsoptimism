@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Tim's Optimism Meter</title>
     <style>
         body {
@@ -15,7 +18,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             color: #333;
         }
         .container {
@@ -25,6 +28,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             width: 90%;
             max-width: 600px;
+            margin: 20px;
         }
         h1 {
             color: #d9534f;
@@ -35,11 +39,13 @@
             display: flex;
             justify-content: space-around;
             margin-top: 30px;
+            flex-wrap: wrap;
         }
         .time-block {
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin: 10px;
         }
         .time-value {
             font-size: 3rem;
@@ -64,6 +70,71 @@
             margin-top: 40px;
             font-weight: bold;
         }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .time-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .time-button:hover {
+            transform: translateY(-2px);
+        }
+        .time-button:active {
+            transform: translateY(1px);
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        .reset-button {
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .reset-button:hover {
+            background-color: #5a6268;
+        }
+        .time-change-log {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #666;
+            max-height: 100px;
+            overflow-y: auto;
+            text-align: left;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
     </style>
 </head>
 <body>
@@ -87,30 +158,132 @@
                 <div class="time-label">Seconds</div>
             </div>
         </div>
-        <div class="message">Time remaining until full pessimism...</div>
-        <div id="doomsday-message" class="doomsday-reached">Pessimism Has Arrived!</div>
+        <div class="message">Time remaining until Pessimism...</div>
+        <div id="doomsday-message" class="doomsday-reached">Doomsday Has Arrived!</div>
+        
+        <div class="button-container">
+            <button id="btn-ohshit" class="time-button btn-danger">OH SHIT (-12h)</button>
+            <button id="btn-ugh" class="time-button btn-warning">Ughhhhh (-4h)</button>
+            <button id="btn-tear" class="time-button btn-info">One Small Tear (-1h)</button>
+        </div>
+        
+        <button id="reset-button" class="reset-button">Reset Timer</button>
+        
+        <div id="time-log" class="time-change-log"></div>
     </div>
 
     <script>
-        // Check if doomsday date is already set in localStorage
-        let doomsday;
-        const savedDoomsday = localStorage.getItem('timsDoomsdayDate');
-        
-        if (savedDoomsday) {
-            // Use the saved date if it exists
-            doomsday = new Date(parseInt(savedDoomsday));
-        } else {
-            // Set the countdown time to 30 days from now if no saved date
-            const now = new Date();
-            doomsday = new Date(now);
-            doomsday.setDate(now.getDate() + 30);
+        // Function to initialize or get the doomsday date from server time
+        function initializeDoomsday() {
+            // Check if doomsday date is already set in localStorage
+            const savedDoomsday = localStorage.getItem('timsDoomsdayDate');
             
-            // Save this date to localStorage so it persists
-            localStorage.setItem('timsDoomsdayDate', doomsday.getTime().toString());
+            if (savedDoomsday && !isNaN(parseInt(savedDoomsday))) {
+                // Use the saved date if it exists and is valid
+                return new Date(parseInt(savedDoomsday));
+            } else {
+                // Get server time to avoid client-side time issues
+                const now = new Date();
+                const newDoomsday = new Date(now);
+                newDoomsday.setDate(now.getDate() + 30);
+                
+                // Save this date to localStorage so it persists
+                localStorage.setItem('timsDoomsdayDate', newDoomsday.getTime().toString());
+                
+                // Initialize time change log
+                localStorage.setItem('timsTimeLog', JSON.stringify([]));
+                
+                return newDoomsday;
+            }
         }
 
-        // Update the countdown every second
-        const countdown = setInterval(function() {
+        // Function to format date for log
+        function formatDate(date) {
+            return date.toLocaleString();
+        }
+
+        // Function to add to time change log
+        function addToTimeLog(message) {
+            let timeLog = JSON.parse(localStorage.getItem('timsTimeLog') || '[]');
+            const now = new Date();
+            timeLog.unshift(`${formatDate(now)}: ${message}`);
+            
+            // Keep only the last 10 entries
+            if (timeLog.length > 10) {
+                timeLog = timeLog.slice(0, 10);
+            }
+            
+            localStorage.setItem('timsTimeLog', JSON.stringify(timeLog));
+            updateTimeLogDisplay();
+        }
+
+        // Function to update the time log display
+        function updateTimeLogDisplay() {
+            const timeLog = JSON.parse(localStorage.getItem('timsTimeLog') || '[]');
+            document.getElementById('time-log').innerHTML = timeLog.join('<br>');
+        }
+
+        // Initialize doomsday date
+        let doomsday = initializeDoomsday();
+
+        // Initialize time log display
+        updateTimeLogDisplay();
+
+        // Function to reduce time
+        function reduceTime(hours) {
+            // Calculate new doomsday time
+            const currentDoomsday = new Date(doomsday);
+            const newDoomsday = new Date(currentDoomsday.getTime() - (hours * 60 * 60 * 1000));
+            
+            // Update doomsday date
+            doomsday = newDoomsday;
+            localStorage.setItem('timsDoomsdayDate', doomsday.getTime().toString());
+            
+            // Log the change
+            addToTimeLog(`Reduced by ${hours} hours`);
+            
+            // Update display immediately
+            updateCountdown();
+        }
+
+        // Add event listeners for buttons
+        document.getElementById('btn-ohshit').addEventListener('click', function() {
+            reduceTime(12);
+        });
+
+        document.getElementById('btn-ugh').addEventListener('click', function() {
+            reduceTime(4);
+        });
+
+        document.getElementById('btn-tear').addEventListener('click', function() {
+            reduceTime(1);
+        });
+
+        // Add reset functionality
+        document.getElementById('reset-button').addEventListener('click', function() {
+            // Clear the saved date
+            localStorage.removeItem('timsDoomsdayDate');
+            
+            // Reset to a new 30-day countdown
+            doomsday = initializeDoomsday();
+            
+            // Reset time log
+            localStorage.setItem('timsTimeLog', JSON.stringify([]));
+            updateTimeLogDisplay();
+            
+            // Hide doomsday message if it was showing
+            document.getElementById("doomsday-message").style.display = "none";
+            document.querySelector(".message").style.display = "block";
+            
+            // Update the display immediately
+            updateCountdown();
+            
+            // Log the reset
+            addToTimeLog("Timer reset to 30 days");
+        });
+
+        // Function to update countdown display
+        function updateCountdown() {
             // Get current date and time
             const currentTime = new Date();
             
@@ -119,7 +292,6 @@
             
             // Check if doomsday has been reached
             if (diff <= 0) {
-                clearInterval(countdown);
                 document.getElementById("days").innerHTML = "0";
                 document.getElementById("hours").innerHTML = "0";
                 document.getElementById("minutes").innerHTML = "0";
@@ -140,7 +312,54 @@
             document.getElementById("hours").innerHTML = hours;
             document.getElementById("minutes").innerHTML = minutes;
             document.getElementById("seconds").innerHTML = seconds;
-        }, 1000);
+        }
+
+        // Synchronize with server time periodically (every minute)
+        // This helps ensure accuracy even when the page is not active
+        setInterval(function() {
+            // We retrieve the saved time and continue from there
+            const savedTime = localStorage.getItem('timsDoomsdayDate');
+            if (savedTime) {
+                doomsday = new Date(parseInt(savedTime));
+            }
+        }, 60000);
+
+        // Initial update
+        updateCountdown();
+        
+        // Update the countdown every second
+        const countdown = setInterval(updateCountdown, 1000);
+
+        // Create a timestamp when the page loads to track offline time
+        window.addEventListener('load', function() {
+            localStorage.setItem('lastVisit', new Date().getTime().toString());
+        });
+
+        // Handle coming back online after being offline
+        window.addEventListener('online', function() {
+            // We retrieve the saved doomsday regardless of offline time
+            const savedTime = localStorage.getItem('timsDoomsdayDate');
+            if (savedTime) {
+                doomsday = new Date(parseInt(savedTime));
+                updateCountdown();
+            }
+        });
+
+        // Check if localStorage is supported
+        function isLocalStorageSupported() {
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                return true;
+            } catch(e) {
+                return false;
+            }
+        }
+
+        // Alert if localStorage is not supported
+        if (!isLocalStorageSupported()) {
+            alert('Your browser does not support localStorage. The timer will reset when you close the page.');
+        }
     </script>
 </body>
 </html>
