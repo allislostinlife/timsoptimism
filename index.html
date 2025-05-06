@@ -87,8 +87,8 @@
                 <div class="time-label">Seconds</div>
             </div>
         </div>
-        <div class="message">Time remaining until deep pessimism...</div>
-        <div id="doomsday-message" class="doomsday-reached">Doomsday Has Arrived!</div>
+        <div class="message">Time remaining until full Pessimism...</div>
+        <div id="doomsday-message" class="doomsday-reached">Pessimism Has Arrived!</div>
     </div>
 
     <script>
@@ -96,6 +96,153 @@
         const now = new Date();
         const doomsday = new Date(now);
         doomsday.setDate(now.getDate() + 30);
+
+        // Update the countdown every second
+        const countdown = setInterval(function() {
+            // Get current date and time
+            const currentTime = new Date();
+            
+            // Calculate the difference in milliseconds
+            const diff = doomsday - currentTime;
+            
+            // Check if doomsday has been reached
+            if (diff <= 0) {
+                clearInterval(countdown);
+                document.getElementById("days").innerHTML = "0";
+                document.getElementById("hours").innerHTML = "0";
+                document.getElementById("minutes").innerHTML = "0";
+                document.getElementById("seconds").innerHTML = "0";
+                document.getElementById("doomsday-message").style.display = "block";
+                document.querySelector(".message").style.display = "none";
+                return;
+            }
+            
+            // Calculate days, hours, minutes, and seconds
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Display the result
+            document.getElementById("days").innerHTML = days;
+            document.getElementById("hours").innerHTML = hours;
+            document.getElementById("minutes").innerHTML = minutes;
+            document.getElementById("seconds").innerHTML = seconds;
+        }, 1000);
+    </script>
+</body>
+</html>
+You can save this code to an HTML file (e.g., "optimism-meter.html") and open it in any web browser. The countdown will start automatically, showing 30 days from the moment the page is loaded.RetryBokay, but once the timer starts it should continue even if the website it not active, it shouldn't resetEditYou're right - for a true doomsday counter, the timer should continue counting down from a fixed end date rather than resetting each time the page is loaded. Let me modify the code to use localStorage to store the doomsday date, so it persists even when the browser is closed:
+html<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tim's Optimism Meter</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #d9534f;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        .countdown {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        .time-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .time-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #d9534f;
+            margin-bottom: 10px;
+        }
+        .time-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: #777;
+        }
+        .message {
+            margin-top: 40px;
+            font-style: italic;
+            color: #666;
+        }
+        .doomsday-reached {
+            display: none;
+            font-size: 2rem;
+            color: #d9534f;
+            margin-top: 40px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tim's Optimism Meter</h1>
+        <div class="countdown">
+            <div class="time-block">
+                <div id="days" class="time-value">30</div>
+                <div class="time-label">Days</div>
+            </div>
+            <div class="time-block">
+                <div id="hours" class="time-value">0</div>
+                <div class="time-label">Hours</div>
+            </div>
+            <div class="time-block">
+                <div id="minutes" class="time-value">0</div>
+                <div class="time-label">Minutes</div>
+            </div>
+            <div class="time-block">
+                <div id="seconds" class="time-value">0</div>
+                <div class="time-label">Seconds</div>
+            </div>
+        </div>
+        <div class="message">Time remaining until full pessimism...</div>
+        <div id="doomsday-message" class="doomsday-reached">Pessimism Has Arrived!</div>
+    </div>
+
+    <script>
+        // Check if doomsday date is already set in localStorage
+        let doomsday;
+        const savedDoomsday = localStorage.getItem('timsDoomsdayDate');
+        
+        if (savedDoomsday) {
+            // Use the saved date if it exists
+            doomsday = new Date(parseInt(savedDoomsday));
+        } else {
+            // Set the countdown time to 30 days from now if no saved date
+            const now = new Date();
+            doomsday = new Date(now);
+            doomsday.setDate(now.getDate() + 30);
+            
+            // Save this date to localStorage so it persists
+            localStorage.setItem('timsDoomsdayDate', doomsday.getTime().toString());
+        }
 
         // Update the countdown every second
         const countdown = setInterval(function() {
